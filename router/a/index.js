@@ -2,9 +2,11 @@
 
 let router = require('koa-router')()
 
-router.get('/a', function*(next) {
+function*controller(next) {
     this.res.end("hello /a")
-})
-module.exports = exports = function (app) {
+}
+
+module.exports = exports = function (app, path) {
+    router.get(path, controller)
     app.use(router.routes())
 }

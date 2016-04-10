@@ -6,16 +6,16 @@ const path = require('path')
 let routerDir = path.resolve(__dirname, "../router")
 
 function walkDirLoop(path, app) {
-    fs.readdir(path, (err, files)=> {
+    fs.readdir(path, (err, files) => {
         if (err) {
             return console.log(err)
         }
         //定义一个保存路径的数组
         let pathArr = []
         //    首先排除掉router/index.js本身,免得自己调用自己造成循环调用
-        files = files.filter(item=> {
+        files = files.filter(item => {
             return item !== "index.js"
-        }).map(item=> {
+        }).map(item => {
             return path + "/" + item
         })
 
@@ -30,12 +30,12 @@ function walkDirLoop(path, app) {
                 if (stat.isDirectory()) {
                     //添加子路径
                     let dir = fs.readdirSync(tmp)
-                    dir = dir.map(item=> {
+                    dir = dir.map(item => {
                         return tmp + "/" + item
                     })
                     pathArr = pathArr.concat(dir)
                 } else {
-                    require(tmp)(app)
+                    require(tmp)(app, tmp.replace(routerDir, "").replace(".js", "").replace(/\/index/, ""))
                 }
             }
         } catch (e) {
