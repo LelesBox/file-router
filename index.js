@@ -3,7 +3,7 @@
 const fs = require('fs')
 const path = require('path')
 
-let routerDir = path.resolve(__dirname, "../router")
+let routerDir;
 
 function walkDirLoop(path, app) {
     fs.readdir(path, (err, files) => {
@@ -45,6 +45,7 @@ function walkDirLoop(path, app) {
 }
 
 
-module.exports = exports = function (app) {
-    walkDirLoop(routerDir, app)
+module.exports = exports = function (app, path) {
+    routerDir=path
+    walkDirLoop(path, app)
 }
