@@ -35,7 +35,7 @@ function walkDirLoop(path, app) {
                     })
                     pathArr = pathArr.concat(dir)
                 } else {
-                    require(tmp)(app, tmp.replace(routerDir, "").replace(".js", "").replace(/\/index/, ""))
+                    require(tmp)(app, tmp.replace(routerDir, "").replace(".js", "").replace(/\/index$/, ""))
                 }
             }
         } catch (e) {
