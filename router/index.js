@@ -5,40 +5,46 @@ const path = require('path')
 
 let routerDir = path.resolve(__dirname, "../router")
 
-function walkDir(path, app) {
+function walkDirLoop(path, app) {
     fs.readdir(path, (err, files)=> {
-            if (err) {
-                return console.log(err)
-            }
-
-            for (let i = 0; i < files.length; i++) {
-                let item = files[i]
-                let p = path + "/" + item
-                // 判断是否是文件夹，
-                fs.stat(p, (err, sta)=> {
-                        if (err) {
-                            return console.log(err)
-                        }
-                        if (sta.isDirectory()) {
-                            // 如果是文件夹则继续walkdir一边,递归查找
-                            walkDir(p, app)
-                        } else {
-                            //在这里,我们必须先排除router/index不然就会造成扫描router文件夹然后自动调用自己...,当然,如果把扫描代码放在router外更好,这里只是单纯测试
-                            if (p == routerDir + "/index.js") {
-                                return
-                            }
-                            console.log(p)
-                            require(p)(app)
-                            // require(p)
-                        }
-                    }
-                )
-            }
+        if (err) {
+            return console.log(err)
         }
-    )
+        //定义一个保存路径的数组
+        let pathArr = []
+        //    首先排除掉router/index.js本身,免得自己调用自己造成循环调用
+        files = files.filter(item=> {
+            return item !== "index.js"
+        }).map(item=> {
+            return path + "/" + item
+        })
+
+        pathArr = pathArr.concat(files)
+        //    循环读取pathArr里面的路径,如果发现是
+        let tmp
+        try {
+            while (tmp = pathArr.shift()) {
+                // 如果使用异步,在pathArr还没来得及被动态添加数据的时候便提前结束,
+                //所以这里的文件操作要使用同步操作
+                let stat = fs.statSync(tmp)
+                if (stat.isDirectory()) {
+                    //添加子路径
+                    let dir = fs.readdirSync(tmp)
+                    dir = dir.map(item=> {
+                        return tmp + "/" + item
+                    })
+                    pathArr = pathArr.concat(dir)
+                } else {
+                    require(tmp)(app)
+                }
+            }
+        } catch (e) {
+            console.log(e)
+        }
+    })
 }
 
 
 module.exports = exports = function (app) {
-    walkDir(routerDir, app)
+    walkDirLoop(routerDir, app)
 }
